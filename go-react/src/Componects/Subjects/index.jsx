@@ -1,8 +1,15 @@
 import React from "react";
 import { useEffect } from "react";
 import { useState } from "react";
+import {
+  Card,
+  CardBody,
+  CardFooter,
+  Typography,
+  Button,
+} from "@material-tailwind/react";
+
 const Subjects = () => {
-  //   const [items, setItems] = useState([]);
   const [subjects, setSubjects] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -29,18 +36,24 @@ const Subjects = () => {
 
   return (
     <>
-      <div>
-        <div>subjects</div>
+      <Card className="mt-6 w-96">
+      <CardBody>
+      <Typography variant="h5" color="blue-gray" className="mb-2">
+        subjects
+        </Typography>
+        <Typography>
         {isLoading && <p>Loading..</p>}
         {error && <p>Error: {error}</p>}
         <ul>
           {subjects.map((subjects) => (
             <li key={subjects.ID}>
-              Name = {subjects.Name} LastName = {subjects.Description}
+              Name = {subjects.Name} Description = {subjects.Description}
             </li> // Assuming each item has an id and name
           ))}
         </ul>
-      </div>
+        </Typography>
+      </CardBody>
+      </Card>
     </>
   );
 };
