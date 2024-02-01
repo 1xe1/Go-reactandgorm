@@ -2,15 +2,15 @@
 package main
 
 import (
+	"github.com/1xe1/go-gorm-db/db"
+	"github.com/1xe1/go-gorm-db/models"
+	"github.com/gin-contrib/cors"
+	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 	"log"
 	"net/http"
 	"os"
 	"time"
-	"github.com/gin-gonic/gin"
-	"github.com/1xe1/go-gorm-db/models"
-	"github.com/1xe1/go-gorm-db/db"
-	"github.com/joho/godotenv"
-	"github.com/gin-contrib/cors"
 )
 
 func main() {
@@ -35,12 +35,11 @@ func main() {
 	}
 
 	// AutoMigrate the database
-	err = database.AutoMigrate(&models.Item{}, &models.Student{}, &models.Subject{})
+	err = database.AutoMigrate(&models.Item{}, &models.Student{}, &models.Subject{}, models.User{})
 	if err != nil {
 		log.Fatalf("failed to migrate database: %v", err)
 	}
 
-	
 	// Create repositories for each model
 	itemRepo := models.NewItemRepository(database)
 	studentRepo := models.NewStudentRepository(database)
@@ -84,6 +83,29 @@ func main() {
 	r.NoRoute(func(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"message": "Not found"})
 	})
+
+	// api /users/login จะเป็นการเรียกใช้งานฟังก์ชัน Login ใน UserRepository
+	// สร้างตัวแปร userRepo เพื่อเรียกใช้งาน UserRepository
+	userRepo := models.NewUserRepository(database)
+
+	// api /users จะเป็นการเรียกใช้งานฟังก์ชัน GetUsers ใน UserRepository
+	r.GET("/users", userRepo.GetUsers)
+
+	// api /users จะเป็นการเรียกใช้งานฟังก์ชัน PostUser ใน UserRepository
+	r.POST("/users", userRepo.PostUser)
+
+	// api /users/:email จะเป็นการเรียกใช้งานฟังก์ชัน GetUser ใน UserRepository
+	// /users/abc@example จะเป็นการส่งค่า email ที่เป็นตัวอักษร abc@example ไปยังฟังก์ชัน GetUser ใน UserRepository
+	r.GET("/users/:email", userRepo.GetUser)
+
+	// api /users/:email จะเป็นการเรียกใช้งานฟังก์ชัน UpdateUser ใน UserRepository
+	r.PUT("/users/:email", userRepo.UpdateUser)
+
+	// api /users/:email จะเป็นการเรียกใช้งานฟังก์ชัน DeleteUser ใน UserRepository
+	r.DELETE("/users/:email", userRepo.DeleteUser)
+
+	// api /users/login จะเป็นการเรียกใช้งานฟังก์ชัน Login ใน UserRepository
+	r.POST("/users/login", userRepo.Login)
 
 	// Run the server
 	if err := r.Run(":5000"); err != nil {
